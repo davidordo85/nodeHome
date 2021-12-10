@@ -8,7 +8,7 @@ mongoose.connection.on('error', err => {
 });
 
 mongoose.connection.once('open', () => {
-  console.log('Connected to MongoDB en', mongoose.connection.name);
+  console.log(`Connected to MongoDB en ${mongoose.connection.name}`);
 });
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STR, {
