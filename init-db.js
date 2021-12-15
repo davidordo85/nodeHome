@@ -18,7 +18,7 @@ async function initUsers() {
 
   const result = await User.insertMany({
     email: 'admin@gmail.com',
-    password: '123456',
+    password: await User.hashPassword('123456'),
   });
   console.log(`Insert ${result.length} user${result.length > 1 ? 's' : ''}.`);
 }
