@@ -8,7 +8,10 @@ mongoose.connection.on('error', err => {
 });
 
 mongoose.connection.once('open', () => {
-  console.log(`Connected to MongoDB en ${mongoose.connection.name}`);
+  console.log(
+    '\x1b[36m%s\x1b[0m',
+    `Connected to MongoDB en ${mongoose.connection.name}`,
+  );
 });
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STR, {

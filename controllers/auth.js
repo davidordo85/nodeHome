@@ -2,20 +2,33 @@
 var express = require('express');
 var router = express.Router();
 
+const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 
 router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
-
     const user = await User.findOne({ email });
-
-    if (!user || user.comparePassword(password)) {
-      res.status(401).json({ error: 'Invalid Credentials' });
+    console.log(user, password);
+    if (!user || !(await user.comparePassword(password))) {
+      const error = new Error('Invalid credential');
+      error.status = 401;
+      next(error);
+      return;
     }
 
-    res.status(200).json({ success: true });
+    jwt.sign(
+      { _id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '2h' },
+      (err, jwtToken) => {
+        if (err) {
+          next(err);
+          return;
+        }
+        res.status(200).json({ success: true, token: jwtToken });
+      },
+    );
   } catch (err) {
     next(err);
   }
@@ -25,7 +38,10 @@ router.post('/login', async (req, res, next) => {
 router.post('/register', async (req, res, next) => {
   try {
     const userData = req.body;
-    const user = new User(userData);
+    const password = await User.hashPassword(userData.password);
+    const data = password;
+    const hash = { email: userData.email, password: data };
+    const user = new User(hash);
     const userCreated = await user.save();
 
     res.status(201).json({ result: userCreated });
