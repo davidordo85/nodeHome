@@ -7,8 +7,8 @@ const { User } = require('../models');
 
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
     if (!user || !(await user.comparePassword(password))) {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
       return;
