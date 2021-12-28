@@ -7,8 +7,9 @@ const { User } = require('../models');
 
 router.post('/login', async (req, res, next) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { email, username, password } = req.body;
+    const user =
+      (await User.findOne({ username })) || (await User.findOne({ email }));
 
     console.log(user);
     if (!user || !(await user.comparePassword(password))) {
@@ -36,10 +37,17 @@ router.post('/login', async (req, res, next) => {
 // POST /api/v1/users (body)
 router.post('/register', async (req, res, next) => {
   try {
-    const { username, password } = req.body;
-    const forDuplicated = await User.findOne({ username });
-    if (forDuplicated) {
-      res.status(401).json({ success: false, message: 'Duplicated user' });
+    const { email, username, password } = req.body;
+    const forDuplicatedEmail = await User.findOne({ email });
+    if (forDuplicatedEmail) {
+      res
+        .status(401)
+        .json({ success: false, message: 'This email is already registered ' });
+      return;
+    }
+    const forDuplicatedUsername = await User.findOne({ username });
+    if (forDuplicatedUsername) {
+      res.status(401).json({ success: false, message: 'Duplicated username' });
       return;
     }
 
@@ -59,7 +67,7 @@ router.post('/register', async (req, res, next) => {
     }
     const passwordHash = await User.hashPassword(password);
     const data = passwordHash;
-    const hash = { username: username, password: data };
+    const hash = { email: email, username: username, password: data };
 
     const user = new User(hash);
     const userCreated = await user.save();

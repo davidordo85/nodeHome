@@ -24,6 +24,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/v1/user', require('./controllers/auth'));
+app.use('/api/v1', require('./controllers/message'));
 
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
