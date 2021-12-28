@@ -9,6 +9,8 @@ router.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
+
+    console.log(user);
     if (!user || !(await user.comparePassword(password))) {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
       return;
@@ -34,10 +36,31 @@ router.post('/login', async (req, res, next) => {
 // POST /api/v1/users (body)
 router.post('/register', async (req, res, next) => {
   try {
-    const userData = req.body;
-    const password = await User.hashPassword(userData.password);
-    const data = password;
-    const hash = { username: userData.username, password: data };
+    const { username, password } = req.body;
+    const forDuplicated = await User.findOne({ username });
+    if (forDuplicated) {
+      res.status(401).json({ success: false, message: 'Duplicated user' });
+      return;
+    }
+
+    if (username.length < 6) {
+      res.status(401).json({
+        success: false,
+        message: 'Username must be at least six characters long',
+      });
+      return;
+    }
+    if (password.length < 6) {
+      res.status(401).json({
+        success: false,
+        message: 'Password must be at least six characters long',
+      });
+      return;
+    }
+    const passwordHash = await User.hashPassword(password);
+    const data = passwordHash;
+    const hash = { username: username, password: data };
+
     const user = new User(hash);
     const userCreated = await user.save();
 
